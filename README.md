@@ -1,3 +1,8 @@
+A simple React webapp built on the idea of a deck of cards based workout. The workout primarily uses Push/Pull/Legs exercises, and drawing cards from a deck selects the number of reps and the exercise.
+
+
+------------------------------------------------------------------------------
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
