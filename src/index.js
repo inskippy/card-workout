@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import Images from './images';
 
 function makeDeck() {
     let spades = [];
@@ -27,16 +28,25 @@ function makeDeck() {
             val = i;
             numVal = i;
         }
-
-        spades.push({value: val, reps: numVal, suit: "Spade"});
-        clubs.push({value: val, reps: numVal, suit: "Club"});
-        hearts.push({value: val, reps: numVal, suit: "Heart"});
-        diamonds.push({value: val, reps: numVal, suit: "Diamond"});
+        
+        spades.push({value: val, reps: numVal, suit: "Spade", imgSrc: 'S'+val});
+        clubs.push({value: val, reps: numVal, suit: "Club", imgSrc: 'C'+val});
+        hearts.push({value: val, reps: numVal, suit: "Heart", imgSrc: 'H'+val});
+        diamonds.push({value: val, reps: numVal, suit: "Diamond", imgSrc: 'D'+val});
     }
     
     const deck = spades.concat(clubs, hearts, diamonds);
     return deck;
 }
+
+// function LoadCardImages(deck) {
+//     let imgs = [];
+//     let src;
+//     for (let i = 0; i < deck.length; i++) {
+//         src = './card_pngs/' + deck[i].val + deck[i].suit[0] + '.png';
+//         imgs[i] = {id: i, src: src, title: deck[i].val + deck[i].suit[0], description: deck[i].val + deck[i].suit[0]}
+//     }
+// }
 
 function NewCardButton(props) {
     return (
@@ -116,6 +126,23 @@ function GetExercise(props) {
             default:
                 return "Rest";
         }
+    }
+}
+
+class Card extends React.Component {
+    render() {
+        let imageTag;
+        if (this.props.currentCard.value === null) {
+            imageTag = <img id="cardIMG" src={Images["red_back"]} alt="red back of card" />;
+        } else {
+            imageTag = <img id="cardIMG" src={Images[this.props.currentCard.imgSrc]} alt={this.props.currentCard.imgSrc} />;
+        }
+        return (
+            <div>
+                <p>Current Card: {this.props.currentCard.value} {this.props.currentCard.suit}</p>
+                {imageTag}
+            </div>
+        );
     }
 }
 
@@ -200,9 +227,12 @@ class Workout extends React.Component {
             exercise = null;
         }
         // const exercise = GetExercise({card: this.state.currentCard, suitCount: this.state.suitCount});
+
+        let card = <Card currentCard={this.state.currentCard} />;
+
         return (
             <div class="workout">
-                <p>Current Card: {this.state.currentCard.value} {this.state.currentCard.suit}</p>
+                {card}
                 <p>{status}</p>
                 {exercise}
                 {button}
