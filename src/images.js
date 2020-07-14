@@ -1,3 +1,6 @@
+// playing card images sourced from http://acbl.mybigcommerce.com/52-playing-cards/ - last accessed on 14th July, 2020
+// image mapping name convention for cards is <First_Suit_Letter><Card_Value> where suits are S/C/H/D, card value is A/2/3/4/5/6/7/8/9/10/J/Q/K
+
 const images = {
     SA: require('./card_pngs/AS.png'),
     S2: require('./card_pngs/2S.png'),

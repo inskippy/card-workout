@@ -39,19 +39,18 @@ function makeDeck() {
     return deck;
 }
 
-// function LoadCardImages(deck) {
-//     let imgs = [];
-//     let src;
-//     for (let i = 0; i < deck.length; i++) {
-//         src = './card_pngs/' + deck[i].val + deck[i].suit[0] + '.png';
-//         imgs[i] = {id: i, src: src, title: deck[i].val + deck[i].suit[0], description: deck[i].val + deck[i].suit[0]}
-//     }
-// }
-
 function NewCardButton(props) {
     return (
       <button onClick={props.onClick}>
-        Draw New Card
+        Next Card
+      </button>
+    );
+}
+
+function PrevCardButton(props) {
+    return (
+      <button onClick={props.onClick}>
+        Previous Card
       </button>
     );
 }
@@ -149,94 +148,125 @@ class Card extends React.Component {
 class Workout extends React.Component {
     constructor(props) {
         super(props);
-        this.handleClick = this.handleClick.bind(this);
+        this.handleForwardClick = this.handleForwardClick.bind(this);
+        this.handleBackClick = this.handleBackClick.bind(this);
         this.state = {
-            deck: makeDeck(),
-            currentCard: {value: null, suit: null},
-            cardCount: 0,
-            maxCards: 20,
-            suitCount: {s: 0, c: 0, h: 0, d: 0},
+            viewNo: 0,
+            history: [{
+                deck: makeDeck(),
+                currentCard: {value: null, suit: null},
+                cardCount: 0,
+                maxCards: 20,
+                suitCount: {s: 0, c: 0, h: 0, d: 0},
+            }],
         }
     }
 
-    handleClick() {
-        const idx = Math.floor(Math.random()*this.state.deck.length);
-        const c = this.state.deck[idx];
-        const newDeck1 = this.state.deck.slice(0, idx);
-        const newDeck2 = this.state.deck.slice(idx+1, this.state.deck.length)
-        
-        let newS = this.state.suitCount.s;
-        let newC = this.state.suitCount.c;
-        let newH = this.state.suitCount.h;
-        let newD = this.state.suitCount.d;
-        switch (c.suit) {
-            case "Spade":
-                if (newS !== 4) {
-                    newS++;
-                } else {
-                    newS = 1;
-                }
-                break;
-            case "Club":
-                if (newC !== 4) {
-                    newC++;
-                } else {
-                    newC = 1;
-                }
-                break;
-            case "Heart":
-                if (newH !== 4) {
-                    newH++;
-                } else {
-                    newH = 1;
-                }
-                break;
-            case "Diamond":
-                if (newD !== 4) {
-                    newD++;
-                } else {
-                    newD = 1;
-                }
-                break;
-            default:
-                break;
-        }
+    handleForwardClick() {
+        if (this.state.viewNo === this.state.history.length-1) {
+            // draw new card from deck
+            const history = this.state.history;
+            const current = history[history.length - 1];
+            const idx = Math.floor(Math.random()*current.deck.length);
+            const c = current.deck[idx];
+            const newDeck1 = current.deck.slice(0, idx);
+            const newDeck2 = current.deck.slice(idx+1, current.deck.length)
+            
+            let newS = current.suitCount.s;
+            let newC = current.suitCount.c;
+            let newH = current.suitCount.h;
+            let newD = current.suitCount.d;
+            switch (c.suit) {
+                case "Spade":
+                    if (newS !== 4) {
+                        newS++;
+                    } else {
+                        newS = 1;
+                    }
+                    break;
+                case "Club":
+                    if (newC !== 4) {
+                        newC++;
+                    } else {
+                        newC = 1;
+                    }
+                    break;
+                case "Heart":
+                    if (newH !== 4) {
+                        newH++;
+                    } else {
+                        newH = 1;
+                    }
+                    break;
+                case "Diamond":
+                    if (newD !== 4) {
+                        newD++;
+                    } else {
+                        newD = 1;
+                    }
+                    break;
+                default:
+                    break;
+            }
 
+            this.setState({
+                viewNo: this.state.viewNo + 1,
+                history: history.concat({
+                    deck: newDeck1.concat(newDeck2),
+                    currentCard: c,
+                    cardCount: current.cardCount+1,
+                    maxCards: current.maxCards,
+                    suitCount: {s: newS, c: newC, h: newH, d: newD},
+                })
+            });
+        } else {
+            // navigate forwards through already drawn cards
+            this.setState({
+                viewNo: this.state.viewNo + 1,
+            });
+        }
+    }
+
+    handleBackClick() {
         this.setState({
-            deck: newDeck1.concat(newDeck2),
-            currentCard: c,
-            cardCount: this.state.cardCount+1,
-            suitCount: {s: newS, c: newC, h: newH, d: newD},
+            viewNo: this.state.viewNo - 1,
         });
     }
 
     render() {
-        const status = "Card " + this.state.cardCount + " of " + this.state.maxCards;
-        let button;
-        if (this.state.cardCount === this.state.maxCards) {
-            button = <CompleteWorkout />;
-            
+        const history = this.state.history;
+        const current = history[this.state.viewNo];
+        const status = "Card " + current.cardCount + " of " + current.maxCards;
+        let fwdButton;
+        let bckButton;
+        if (current.cardCount === current.maxCards) {
+            fwdButton = <CompleteWorkout />;
+            bckButton = <PrevCardButton onClick={this.handleBackClick} />;
+        } else if (current.cardCount === 0) {
+            fwdButton = <NewCardButton onClick={this.handleForwardClick} />;
+            bckButton = null;
         } else {
-            button = <NewCardButton onClick={this.handleClick} />;
+            fwdButton = <NewCardButton onClick={this.handleForwardClick} />;
+            bckButton = <PrevCardButton onClick={this.handleBackClick} />;
         }
 
         let exercise;
-        if (this.state.cardCount !== 0) {
-            exercise = <ListExercise currentCard={this.state.currentCard} suitCount={this.state.suitCount} />;
+        if (current.cardCount !== 0) {
+            exercise = <ListExercise currentCard={current.currentCard} suitCount={current.suitCount} />;
         } else {
             exercise = null;
         }
         // const exercise = GetExercise({card: this.state.currentCard, suitCount: this.state.suitCount});
 
-        let card = <Card currentCard={this.state.currentCard} />;
+        let card = <Card currentCard={current.currentCard} />;
 
         return (
             <div class="workout">
                 {card}
                 <p>{status}</p>
                 {exercise}
-                {button}
-                {/* <button onClick={() => this.handleClick()}>Draw New Card</button> */}
+                {bckButton}
+                {fwdButton}
             </div>
         );
     }
@@ -246,148 +276,3 @@ ReactDOM.render(
   <Workout />,
   document.getElementById('root')
 );
-
-// function Square(props) {
-//     return (
-//         <button className="square" onClick={props.onClick}>
-//             {props.value}
-//         </button>
-//     );
-// }
-
-// class Board extends React.Component {  
-//     renderSquare(i) {
-//         return (
-//             <Square 
-//                 value={this.props.squares[i]}
-//                 onClick={() => this.props.onClick(i)}
-//             />
-//         );
-//     }
-
-//   render() {
-//     return (
-//       <div>
-//         <div className="board-row">
-//           {this.renderSquare(0)}
-//           {this.renderSquare(1)}
-//           {this.renderSquare(2)}
-//         </div>
-//         <div className="board-row">
-//           {this.renderSquare(3)}
-//           {this.renderSquare(4)}
-//           {this.renderSquare(5)}
-//         </div>
-//         <div className="board-row">
-//           {this.renderSquare(6)}
-//           {this.renderSquare(7)}
-//           {this.renderSquare(8)}
-//         </div>
-//       </div>
-//     );
-//   }
-// }
-
-// class Game extends React.Component {    
-//     constructor(props) {
-//         super(props);
-//         this.state = {
-//             history: [{
-//                 squares: Array(9).fill(null),
-//             }],
-//             stepNumber: 0,
-//             xIsNext: true,
-//         };
-//     }
-
-//     handleClick(i) {
-//         const history = this.state.history.slice(0,
-//     this.state.stepNumber + 1);
-//         const current = history[history.length - 1];
-//         const squares = current.squares.slice();
-//         if (calculateWinner(squares) || squares[i]) {
-//             return;
-//         }
-//         squares[i] = this.state.xIsNext ? 'X' : 'O';
-//         this.setState({
-//             history: history.concat([{
-//                 squares: squares,
-//             }]),
-//             stepNumber: history.length,
-//             xIsNext: !this.state.xIsNext,
-//         });
-//     }
-
-//     jumpTo(step) {
-//         this.setState({
-//             stepNumber: step,
-//             xIsNext: (step % 2)  === 0,
-//         });
-//     }
-  
-//     render() {
-//         const history = this.state.history;
-//         const current = history[this.state.stepNumber];
-//         const winner = calculateWinner(current.squares);
-
-//         const moves = history.map((step, move) => {
-//             const desc = move ?
-//                 'Go to move #' + move :
-//                 'Go to game start';
-//             return (
-//                 <li key={move}>
-//                     <button onClick={() => this.jumpTo(move)}>{desc}</button>
-//                 </li>
-//             );
-//         });
-
-//         let status;
-//         if (winner) {
-//             status = 'Winner: ' + winner;
-//         } else {
-//             status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
-//         }
-        
-//         return (
-//             <div className="game">
-//                 <div className="game-board">
-//                 <Board 
-//                     squares={current.squares}
-//                     onClick={(i) => this.handleClick(i)}
-//                 />
-//                 </div>
-//                 <div className="game-info">
-//                 <div>{status}</div>
-//                 <ol>{moves}</ol>
-//                 </div>
-//             </div>
-//         );
-//     }
-// }
-
-// // ========================================
-
-// ReactDOM.render(
-//   <Game />,
-//   document.getElementById('root')
-// );
-
-// function calculateWinner(squares) {
-//     const lines = [
-//       [0, 1, 2],
-//       [3, 4, 5],
-//       [6, 7, 8],
-//       [0, 3, 6],
-//       [1, 4, 7],
-//       [2, 5, 8],
-//       [0, 4, 8],
-//       [2, 4, 6],
-//     ];
-//     for (let i = 0; i < lines.length; i++) {
-//       const [a, b, c] = lines[i];
-//       if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-//         return squares[a];
-//       }
-//     }
-//     return null;
-//   }
