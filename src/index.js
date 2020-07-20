@@ -2,6 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import Images from './images';
+import { BrowserRouter } from 'react-router-dom'; // following this https://blog.pusher.com/getting-started-with-react-router-v4/
+import { NavLink, Switch, Route } from 'react-router-dom';
+
 
 function makeDeck() {
     let spades = [];
@@ -145,6 +148,48 @@ class Card extends React.Component {
     }
 }
 
+// const App = () => (
+//     <div className='app'>
+//         <Navigation />
+//         <Main />
+//     </div>
+// );
+
+class App extends React.Component {
+    constructor(props) {
+        super(props);
+        this.updateMaxCards = this.updateMaxCards.bind(this);
+        this.state = {
+            maxCards: 20,
+        }
+    }
+
+    updateMaxCards(newMax) {
+        this.setState({
+            maxCards: newMax,
+        })
+    }
+
+    render() {
+        return (
+            <div className='app'>
+                <Navigation />
+                <Main updateMaxCards/>
+            </div>
+        );
+    }
+}
+
+// class App extends React.Component {
+//     render() {
+//         return(
+            
+//             <Main />
+//         );
+//     }
+// }
+
+
 class Workout extends React.Component {
     constructor(props) {
         super(props);
@@ -272,7 +317,33 @@ class Workout extends React.Component {
     }
 }
 
-ReactDOM.render(
-  <Workout />,
-  document.getElementById('root')
+const Navigation = () => (
+    <nav>
+        <ul>
+            <li><NavLink to='/'>Workout</NavLink></li>
+            <li><NavLink to='/settings'>Settings</NavLink></li>
+        </ul>
+    </nav>
 );
+
+// const Workout = () => (
+//     <p>Workout Test</p>
+// );
+
+const Settings = () => (
+    <p>Test settings page</p>
+)
+
+const Main = () => (
+    <Switch>
+        <Route exact path='/' component={Workout} />
+        <Route exact path='/settings' render={(routeProps) => (
+            <Settings {...routeProps} updateMaxCards /> )} />
+    </Switch>
+);
+
+ReactDOM.render((
+    <BrowserRouter>
+        <App />
+    </BrowserRouter>
+    ), document.getElementById('root'));
