@@ -1,8 +1,5 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# npm start uses react-scripts start locally, but serve -s build on heroku (master)
-/package.json
-
 # dependencies
 /node_modules
 /.pnp
