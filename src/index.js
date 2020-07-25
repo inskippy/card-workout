@@ -317,6 +317,10 @@ class Workout extends React.Component {
     }
 }
 
+const NoMatch = ({ location }) => (
+    <h3>No match for <code>{location.pathname}</code></h3>
+  )
+
 const Navigation = () => (
     <nav>
         <ul>
@@ -339,6 +343,7 @@ const Main = () => (
         <Route exact path='/' component={Workout} />
         <Route exact path='/settings' render={(routeProps) => (
             <Settings {...routeProps} updateMaxCards /> )} />
+        <Route component={NoMatch} />
     </Switch>
 );
 
